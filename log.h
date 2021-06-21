@@ -1,14 +1,14 @@
 #pragma once
 
-#include <ctime>
+#include <sys/time.h>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <map>
-#include <memory>
 #include <mutex>
-#include <string>
+#include <math.h>
+#include <string.h>
 #include <future>
 
 namespace SimpleLog {
@@ -101,12 +101,38 @@ public:
     return formattedDateSs.str();
   }
   static std::string formattedDateTime() {
-    time_t t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    std::stringstream formattedDateSs;
-    formattedDateSs << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+    char buffer[28];
+    struct tm * tm_info;
 
-    return formattedDateSs.str();
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+
+    tm_info = localtime(&tv.tv_sec);
+
+    if ( __SHOW_DATE ) {
+      strftime(buffer, 27 , "%Y-%m-%dT%H:%M:%S", tm_info);
+    }
+    else {
+      strftime(buffer, 27 , "%H:%M:%S", tm_info);
+    }
+
+    if ( __SHOW_MILLISECONDS ) { // add milliseconds
+      int millisec = lrint(tv.tv_usec/1000.0); // Round to nearest millisec
+      if (millisec>=1000) { // Allow for rounding up to nearest second
+        millisec -=1000;
+        tv.tv_sec++;
+      }
+      sprintf(buffer, "%s.%03d", buffer, millisec);
+    }
+
+    if ( __SHOW_TIMEZONE ) { // add timezone offset
+      char buffer_tz[8];
+      strftime(buffer_tz, 7 , "%z", tm_info);
+      strcat(buffer, buffer_tz);
+    }
+
+    return std::string(buffer);
   }
 
 private:
@@ -116,6 +142,10 @@ private:
   bool __DO_COLORING;
   bool __LOG_TO_CONSOLE;
   bool __LOG_TO_FILE;
+
+  static constexpr bool __SHOW_DATE = true;
+  static constexpr bool __SHOW_TIMEZONE = false;
+  static constexpr bool __SHOW_MILLISECONDS = true;
 
 private:
   static std::shared_ptr<SimpleLogger> instance_;
