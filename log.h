@@ -24,16 +24,16 @@ SOFTWARE.
 
 #pragma once
 
-#include <sys/time.h>
-#include <iomanip>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <future>
 #include <map>
 #include <mutex>
 #include <math.h>
 #include <string.h>
-#include <future>
+#include <sys/time.h>
 
 namespace SimpleLog {
 
@@ -125,20 +125,26 @@ public:
     return formattedDateSs.str();
   }
   static std::string formattedDateTime() {
-    char buffer[28];
-    struct tm * tm_info;
-
     struct timeval tv;
     gettimeofday(&tv, NULL);
 
+    struct tm * tm_info = localtime(&tv.tv_sec);
 
-    tm_info = localtime(&tv.tv_sec);
-
+    char buffer[28];
     if ( __SHOW_DATE ) {
-      strftime(buffer, 27 , "%Y-%m-%dT%H:%M:%S", tm_info);
+      sprintf(buffer, "%04d-%02d-%02dT%02d:%02d:%02d",
+              1900 + tm_info->tm_year,
+              tm_info->tm_mon,
+              tm_info->tm_mday,
+              tm_info->tm_hour,
+              tm_info->tm_min,
+              tm_info->tm_sec);
     }
     else {
-      strftime(buffer, 27 , "%H:%M:%S", tm_info);
+      sprintf(buffer, "%02d:%02d:%02d",
+              tm_info->tm_hour,
+              tm_info->tm_min,
+              tm_info->tm_sec);
     }
 
     if ( __SHOW_MILLISECONDS ) { // add milliseconds
@@ -147,7 +153,8 @@ public:
         millisec -=1000;
         tv.tv_sec++;
       }
-      sprintf(buffer, "%s.%03d", buffer, millisec);
+      strcat(buffer, ".");
+      strcat(buffer, std::to_string(millisec).c_str());
     }
 
     if ( __SHOW_TIMEZONE ) { // add timezone offset
