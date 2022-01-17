@@ -134,7 +134,7 @@ public:
     if ( __SHOW_DATE ) {
       sprintf(buffer, "%04d-%02d-%02dT%02d:%02d:%02d",
               1900 + tm_info->tm_year,
-              tm_info->tm_mon,
+              1 + tm_info->tm_mon,
               tm_info->tm_mday,
               tm_info->tm_hour,
               tm_info->tm_min,
