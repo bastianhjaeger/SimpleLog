@@ -179,8 +179,9 @@ public:
         millisec -=1000;
         tv.tv_sec++;
       }
-      strcat(buffer, ".");
-      strcat(buffer, std::to_string(millisec).c_str());
+      char mill_str[5] = "";
+      sprintf(mill_str, ".%03d", millisec);
+      strcat(buffer, mill_str);
     }
 
     if ( __SHOW_TIMEZONE ) { // add timezone offset
