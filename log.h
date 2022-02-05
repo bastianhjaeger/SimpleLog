@@ -57,6 +57,32 @@ enum LOG_LEVEL {
   ERROR = 4,
 };
 
+
+inline std::ostream& operator<<(std::ostream& _os, const LOG_LEVEL& _e_log) {
+  switch(_e_log) {
+    case DEBUG2:
+      _os << "DEBUG2";
+      break;
+    case DEBUG:
+      _os << "DEBUG";
+      break;
+    case INFO:
+      _os << "INFO";
+      break;
+    case WARN:
+      _os << "WARN";
+      break;
+    case ERROR:
+      _os << "ERROR";
+      break;
+    default:
+      _os << "UNKNOWN";
+
+  }
+
+  return _os;
+}
+
 class SimpleLogger {
 private:
   SimpleLogger(const std::string &_name, LOG_LEVEL _verbosity, bool _doColoring = true, bool _logToConsole = true, bool _logToFile = false) {
