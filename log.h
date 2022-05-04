@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #pragma once
+#pragma GCC diagnostic ignored "-Wformat-overflow"
 
 #include <iostream>
 #include <iomanip>
@@ -150,7 +151,7 @@ public:
 
     return formattedDateSs.str();
   }
-  static std::string formattedDateTime() {
+  static std::string formatted_date_time() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
 
@@ -159,18 +160,18 @@ public:
     char buffer[28];
     if ( __SHOW_DATE ) {
       sprintf(buffer, "%04d-%02d-%02dT%02d:%02d:%02d",
-              1900 + tm_info->tm_year,
-              1 + tm_info->tm_mon,
-              tm_info->tm_mday,
-              tm_info->tm_hour,
-              tm_info->tm_min,
-              tm_info->tm_sec);
+          std::max(0, std::min(1900 + tm_info->tm_year, 3000)),
+          std::max(0, std::min(1 + tm_info->tm_mon, 12)),
+          std::max(0, std::min(tm_info->tm_mday, 31)),
+          std::max(0, std::min(tm_info->tm_hour, 23)),
+          std::max(0, std::min(tm_info->tm_min, 59)),
+          std::max(0, std::min(tm_info->tm_sec, 59)));
     }
     else {
       sprintf(buffer, "%02d:%02d:%02d",
-              tm_info->tm_hour,
-              tm_info->tm_min,
-              tm_info->tm_sec);
+          std::max(0, std::min(tm_info->tm_hour, 23)),
+          std::max(0, std::min(tm_info->tm_min, 59)),
+          std::max(0, std::min(tm_info->tm_sec, 59)));
     }
 
     if ( __SHOW_MILLISECONDS ) { // add milliseconds
@@ -180,7 +181,7 @@ public:
         tv.tv_sec++;
       }
       char mill_str[5] = "";
-      sprintf(mill_str, ".%03d", millisec);
+      sprintf(mill_str, ".%03d", std::max(0, std::min(millisec, 999)));
       strcat(buffer, mill_str);
     }
 
@@ -229,7 +230,7 @@ static std::mutex __LOG_MUTEX;
         if ( SimpleLog::SimpleLogger::doColoring() ) { \
           _CLOG << SimpleLog::SimpleLogger::loglevel_color()[_l]; \
         } \
-        _CLOG << SimpleLog::SimpleLogger::formattedDateTime() << " " << SimpleLog::SimpleLogger::loglevel_str()[_l] << " "; \
+        _CLOG << SimpleLog::SimpleLogger::formatted_date_time() << " " << SimpleLog::SimpleLogger::loglevel_str()[_l] << " "; \
         if ( SimpleLog::SimpleLogger::doColoring() ) { \
           _CLOG << LOG_COLOR_END; \
         } \
@@ -239,7 +240,7 @@ static std::mutex __LOG_MUTEX;
         if ( SimpleLog::SimpleLogger::doColoring() ) { \
           _FLOG << SimpleLog::SimpleLogger::loglevel_color()[_l]; \
         } \
-        _FLOG << SimpleLog::SimpleLogger::formattedDateTime() << " " << SimpleLog::SimpleLogger::loglevel_str()[_l] << " "; \
+        _FLOG << SimpleLog::SimpleLogger::formatted_date_time() << " " << SimpleLog::SimpleLogger::loglevel_str()[_l] << " "; \
         if ( SimpleLog::SimpleLogger::doColoring() ) { \
           _FLOG << LOG_COLOR_END; \
         } \
