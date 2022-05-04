@@ -249,6 +249,22 @@ static std::mutex __LOG_MUTEX;
   } \
 }
 
+#define LOGN(level, msg) { \
+  if ( !SimpleLog::SimpleLogger::getInstance() ) { \
+    SimpleLog::SimpleLogger::Init(); \
+  } \
+  if ( level >= SimpleLog::SimpleLogger::verbosity() ) { \
+    std::stringstream logSs; \
+    logSs << msg; \
+    auto f = std::async([](LOG_LEVEL _l, std::string _m){ \
+      std::lock_guard<std::mutex> lockGuard(__LOG_MUTEX); \
+      if ( SimpleLog::SimpleLogger::logToConsole() ) { \
+        _CLOG << _m; \
+      } \
+    }, level, logSs.str()); \
+  } \
+}
+
 inline void log_init(const std::string &_name, LOG_LEVEL _verbosity = DEBUG, bool _doColoring = true, bool _logToConsole = false, bool _logToFile = false) {
   SimpleLogger::Init(_name, _verbosity, _doColoring, _logToConsole, _logToFile);
 
